@@ -9,7 +9,10 @@ dotenv.config();
 const PORT = 3000;
 
 const connectMongoDB = async()=>{
-    const conn =  await mongoose.connect(process.env.MONGOODB_URI)
+    const conn =  await mongoose.connect(process.env.MONGOODB_URI);
+if (conn){
+    console.log("Connecting to MongoDB successfully ...");
+}
 };
 connectMongoDB();
 
@@ -23,10 +26,10 @@ const productSchema = new Schema({
 
 const Product = model('Product', productSchema);
 
-app.get('/product/:_id', async (req, res) => {
- const {_id} = req.params ;
+app.get('/product', async (req, res) => {
+ const {id} = req.query ;
 
-    const products = await Product.findOne({_id:_id})
+    const products = await Product.findById(id);
      res.json({
         success: true,
         data:products,
@@ -34,7 +37,7 @@ app.get('/product/:_id', async (req, res) => {
     })
 });
 
-app.post('/product', (req, res) => {
+app.post('/product', async (req, res) => {
     const {name,description,price, productImage,brand} =req.body ;
  
     if (!name){
@@ -74,8 +77,8 @@ app.post('/product', (req, res) => {
          productImage:productImage,
          brand:brand
   });
-  const savedProduct = newProduct.save();
-  req.json({
+  const savedProduct = await newProduct.save();
+   res.json({
     success:true,
     data: savedProduct,
     message: 'Product saved successfully',
